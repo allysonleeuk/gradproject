@@ -1,2 +1,1 @@
-packaging @ file:///opt/miniconda3/conda-bld/packaging_1761049079066/work
-pygame==2.6.1
+pygame
