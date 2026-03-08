@@ -2,6 +2,8 @@
 import pygame
 pygame.init()
 
+import sys
+
 
 # variables
 (width, height) = (1600, 1000) #currently set to mac aspect ratio
@@ -24,7 +26,7 @@ pygame.display.set_caption('robots.txt')
 screen.fill(background_colour)
 
 # set font
-question_font = pygame.font.Font('assets/upheaval.ttf', 50)
+question_font = pygame.font.Font('assets/upheaval.ttf', 40)
 
 # ·················•·················• ★ •·················•·················
 
@@ -32,13 +34,30 @@ question_font = pygame.font.Font('assets/upheaval.ttf', 50)
 screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows you to draw images to the screen
 pygame.display.update()
 
+# add rect backgrounds
+rect_border = pygame.Rect(0, 0, (width - 200), (height - 150))
+rect_border.center = (width / 2, height / 2)
+pygame.draw.rect(screen, (194, 243, 232), rect_border, border_radius = 25)
+
+rect = pygame.Rect(0, 0, (width - 240), (height - 190))
+rect.center = (width / 2, height / 2)
+pygame.draw.rect(screen, (255, 194, 214), rect, border_radius = 20)
+
+
+input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
+input_rect.center = (width / 2, height / 2)
+pygame.draw.rect(screen, (255, 255, 255), input_rect, border_radius = 15)
+
 # add question text
-def display_question(text, font, text_colour, x, y):
-    question = font.render(text, True, text_colour) # boolean smooths font
-    screen.blit(question, (x, y))
+def display_question(question, font, text_colour, y):
+    text = font.render(question, True, text_colour) # boolean smooths font
 
-display_question('WHAT do you dislike about the modern-day internet?', question_font, (0, 0, 0), 0, 0)
+    # center text 
+    text_rect = text.get_rect(center=(width/2, y))
+    return text, text_rect
 
+question, question_rect = display_question('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), height / 5)
+screen.blit(question, question_rect)
 
 
 # ·················•·················• ★ •·················•·················
@@ -48,11 +67,11 @@ pygame.display.flip()
 
 # keep screen on screen forever by creating an infinite loop
 # until you close the window
-running = True
-while running:
+while True:
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
-      running = False
+        pygame.quit()
+        sys.exit()
 
 # how to set window to fullscreen (only do this once it's finished)
 # how to change the screen size to whatever the monitor size is
