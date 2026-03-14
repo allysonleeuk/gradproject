@@ -84,6 +84,45 @@ def display_question(question, font, text_colour, y):
 question, question_rect = display_question('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), (rect.y + 75))
 fake_screen.blit(question, question_rect)
 
+# wrap text function (source: https://stackoverflow.com/questions/49432109/how-to-wrap-text-in-pygame-using-pygame-font-font)
+def wrap_text(text, font, colour, x, y, screen, allowed_width, allowed_height):
+    words = text.split()
+
+    lines = []
+    while len(words) > 0: # split text into lines
+
+        line_words = []
+        while len(words) > 0: # loop through words to form lines
+            line_words.append(words.pop(0)) # pop first word
+            fw, fh = font.size(' '.join(line_words + words[:1])) # add the first word back and get the size
+
+            if fw > allowed_width:
+                break
+        
+        line = ' '.join(line_words) # add a line with the selected words
+        lines.append(line)
+    
+    y_offset = 0
+    for line in lines:
+        fw, fh = font.size(line)
+
+        # tx, ty is the x and y coords for the toft-left of the font surface
+        tx = x - fw / 2 # center text
+        ty = y + y_offset
+
+        if y_offset + fh > allowed_height:
+            lines.pop(0) # pop first line\
+            ty -= fh
+
+            font_surface = font.render(line, True, colour)
+            screen.blit(font_surface, (tx, ty))
+        else:
+            font_surface = font.render(line, True, colour)
+            screen.blit(font_surface, (tx, ty))
+
+            y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
+
+
 # add submit button (source: https://www.youtube.com/watch?v=G8MYGDf_9ho)
 submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until i solidify the design theme
 
@@ -155,8 +194,18 @@ while True:
             input_rect_border.center = (width / 2, height / 2)
             pygame.draw.rect(fake_screen, (194, 243, 232), input_rect_border, 5, border_radius = 15)
         
-        text_surface = input_font.render(user_text, True, (0, 0, 0))
-        fake_screen.blit(text_surface, (input_rect.x + 20, input_rect.y + 20))
+        padding = 20
+        # text_surface = input_font.render(user_text, True, (0, 0, 0))
+        # fake_screen.blit(text_surface, (input_rect.x + padding, input_rect.y + padding))
+        wrap_text(user_text, 
+                  input_font, 
+                  (0, 0, 0), 
+                  width / 2, 
+                  input_rect.y + int(padding), 
+                  fake_screen, 
+                  input_rect.width - int(padding), 
+                  input_rect.height - int(padding)
+                  )
 
         # display button
         submit_button.draw()
