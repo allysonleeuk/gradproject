@@ -28,13 +28,13 @@ screen = pygame.display.set_mode((width, height)) # test if it can be resized to
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
 # create a 'fake screen' to resize elements (source: https://stackoverflow.com/a/34919705)
-fake_screen = screen.copy()
+temp_screen = screen.copy()
 
 # set window name
 pygame.display.set_caption('robots.txt')
 
 #set background colour
-fake_screen.fill(background_colour)
+temp_screen.fill(background_colour)
 
 # set fonts
 question_font = pygame.font.Font('assets/upheaval.ttf', 40)
@@ -49,6 +49,7 @@ user_name = ''
 input_date = ''
 input_time = ''
 
+input_parts = [] # save the input in parts so I can send data to the machine learning aspect
 final_inputs = []
 name_array = []
 date_array = []
@@ -57,21 +58,21 @@ time_array = []
 # ·················•·················• ★ •·················•·················
 
 # add background image
-fake_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows you to draw images to the screen
+temp_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows you to draw images to the screen
 pygame.display.update()
 
 # add rect backgrounds
 rect_border = pygame.Rect(0, 0, (width - 200), (height - 170))
 rect_border.center = (width / 2, height / 2)
-pygame.draw.rect(fake_screen, (194, 243, 232), rect_border, border_radius = 25)
+pygame.draw.rect(temp_screen, (194, 243, 232), rect_border, border_radius = 25)
 
 rect = pygame.Rect(0, 0, (width - 240), (height - 210))
 rect.center = (width / 2, height / 2)
-pygame.draw.rect(fake_screen, (255, 194, 214), rect, border_radius = 15)
+pygame.draw.rect(temp_screen, (255, 194, 214), rect, border_radius = 15)
 
 input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
 input_rect.center = (width / 2, height / 2)
-pygame.draw.rect(fake_screen, (255, 255, 255), input_rect, border_radius = 15)
+pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
 
 # add question text
 def display_question(question, font, text_colour, y):
@@ -82,10 +83,10 @@ def display_question(question, font, text_colour, y):
     return text, text_rect
 
 question, question_rect = display_question('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), (rect.y + 75))
-fake_screen.blit(question, question_rect)
+temp_screen.blit(question, question_rect)
 
 # wrap text function (source: https://stackoverflow.com/questions/49432109/how-to-wrap-text-in-pygame-using-pygame-font-font)
-def wrap_text(text, font, colour, x, y, screen, allowed_width, allowed_height):
+def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
     words = text.split()
 
     lines = []
@@ -110,21 +111,23 @@ def wrap_text(text, font, colour, x, y, screen, allowed_width, allowed_height):
         tx = x - fw / 2 # center text
         ty = y + y_offset
 
-        if y_offset + fh > allowed_height:
-            lines.pop(0) # pop first line\
-            ty -= fh
+        # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
+        # if y_offset + fh > allowed_height:
+        #     lines.pop(0) # pop first line
+        #     ty -= fh
 
-            font_surface = font.render(line, True, colour)
-            screen.blit(font_surface, (tx, ty))
-        else:
-            font_surface = font.render(line, True, colour)
-            screen.blit(font_surface, (tx, ty))
+        #     font_surface = font.render(line, True, colour)
+        #     temp_screen.blit(font_surface, (tx, ty))
+        # else:
 
-            y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
+        font_surface = font.render(line, True, colour)
+        temp_screen.blit(font_surface, (tx, ty))
+
+        y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
 
 
 # add submit button (source: https://www.youtube.com/watch?v=G8MYGDf_9ho)
-submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until i solidify the design theme
+submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
 
 class Button(): # button class
     def __init__(self, y, image, scale):
@@ -149,7 +152,7 @@ class Button(): # button class
                 # print(user_text)
 
         # draw button to screen
-        fake_screen.blit(self.image, (self.rect.x, self.rect.y))
+        temp_screen.blit(self.image, (self.rect.x, self.rect.y))
 
 submit_button = Button(height - 200, submit_button_img, 1) # create button instance
 
@@ -180,6 +183,9 @@ while True:
                     user_text = user_text[:-1] # remove last character
                 else:
                     user_text += event.unicode
+                
+                # append current text to array after every keystroke (most recent  be sent to other screen in intervals)
+                input_parts.append(user_text) # NOTE: will this make the array too large?
             
         elif event.type == pygame.VIDEORESIZE:
             screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
@@ -187,22 +193,21 @@ while True:
         # text input function
         input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
         input_rect.center = (width / 2, height / 2)
-        pygame.draw.rect(fake_screen, (255, 255, 255), input_rect, border_radius = 15)
+        pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
         
         if active:
             input_rect_border = pygame.Rect(0, 0, (width - 500), (height - 550))
             input_rect_border.center = (width / 2, height / 2)
-            pygame.draw.rect(fake_screen, (194, 243, 232), input_rect_border, 5, border_radius = 15)
+            pygame.draw.rect(temp_screen, (194, 243, 232), input_rect_border, 5, border_radius = 15)
         
         padding = 20
         # text_surface = input_font.render(user_text, True, (0, 0, 0))
-        # fake_screen.blit(text_surface, (input_rect.x + padding, input_rect.y + padding))
+        # temp_screen.blit(text_surface, (input_rect.x + padding, input_rect.y + padding))
         wrap_text(user_text, 
                   input_font, 
                   (0, 0, 0), 
                   width / 2, 
                   input_rect.y + int(padding), 
-                  fake_screen, 
                   input_rect.width - int(padding), 
                   input_rect.height - int(padding)
                   )
@@ -212,7 +217,7 @@ while True:
 
 
         # draw fake screen to screen, have it transform when window size changes
-        screen.blit(pygame.transform.scale(fake_screen, screen.get_rect().size), (0, 0))
+        screen.blit(pygame.transform.scale(temp_screen, screen.get_rect().size), (0, 0))
         
         # display changes to the window
         pygame.display.flip()
