@@ -38,7 +38,8 @@ temp_screen.fill(background_colour)
 
 # set fonts
 question_font = pygame.font.Font('assets/upheaval.ttf', 40)
-input_font = pygame.font.Font('assets/windows.ttf', 35)
+# input_font = pygame.font.Font('assets/windows.ttf', 35)
+input_font = pygame.font.Font('assets/windows.ttf', 60)
 
 # set variables for text input (source: https://youtu.be/Rvcyf4HsWiw?si=ZIizByTLaZT7YBHN)
 clock = pygame.time.Clock()
@@ -107,24 +108,31 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
     
     y_offset = 0
     for line in lines:
-        fw, fh = font.size(line)
+        for displayed_line in displayed_lines:
+            fw, fh = font.size(line)
 
-        # tx, ty is the x and y coords for the toft-left of the font surface
-        tx = x - fw / 2 # center text
-        ty = y + y_offset
+            # tx, ty is the x and y coords for the top-left of the font surface
+            tx = x - fw / 2 # center text
+            ty = y + y_offset
 
-        # # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
-        # if y_offset + fh > allowed_height:
-        #     displayed_lines.pop(0) # pop first line
-        #     ty -= fh
+            # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
+            if y_offset + fh > allowed_height:
+                displayed_lines.pop(0) # pop first line
+                ty -= fh # reset y level
 
-        #     font_surface = font.render(line, True, colour)
-        #     temp_screen.blit(font_surface, (tx, ty))
-        # else:
-        font_surface = font.render(line, True, colour)
-        temp_screen.blit(font_surface, (tx, ty))
+                # redraw rect to 'clear' screen
+                input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
+                input_rect.center = (width / 2, height / 2)
+                pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
 
-        y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
+                font_surface = font.render(displayed_line, True, colour)
+                temp_screen.blit(font_surface, (tx, ty))
+
+            else:
+                font_surface = font.render(line, True, colour)
+                temp_screen.blit(font_surface, (tx, ty))
+
+            y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
 
 
 # add submit button (source: https://www.youtube.com/watch?v=G8MYGDf_9ho)
