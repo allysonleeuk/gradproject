@@ -5,16 +5,13 @@ pygame.init()
 import sys
 
 
-# VARIABLES
+# VARIABLES + SETUP
 (width, height) = (1470, 956) #currently set to my mac aspect ratio
 background_colour = (255,255,255)
 
 # load in image and resize it to fit screen
 bg_image = pygame.image.load('assets/tartan.jpg')
 bg_image = pygame.transform.scale(bg_image, (width, height))
-
-
-# SETUP
 
 # set screen size
 screen = pygame.display.set_mode((width, height)) # test if it can be resized to fit different screen sizes
@@ -113,14 +110,7 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
         tx = x - fw / 2 # center text
         ty = y + y_offset
 
-        # # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
-        # if y_offset + fh > allowed_height:
-        #     displayed_lines.pop(0) # pop first line
-        #     ty -= fh
-
-        #     font_surface = font.render(line, True, colour)
-        #     temp_screen.blit(font_surface, (tx, ty))
-        # else:
+        # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
         font_surface = font.render(line, True, colour)
         temp_screen.blit(font_surface, (tx, ty))
 
@@ -209,8 +199,8 @@ while True:
                   (0, 0, 0), 
                   width / 2, 
                   input_rect.y + int(padding), 
-                  input_rect.width - int(padding), 
-                  input_rect.height - int(padding)
+                  input_rect.width - int(padding) * 2, 
+                  input_rect.height - int(padding) * 2,
                   )
 
         # display button
