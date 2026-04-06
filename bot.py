@@ -31,7 +31,7 @@ temp_screen.fill(background_colour)
 
 # set fonts
 title_font = pygame.font.Font('assets/ari.ttf', 85)
-body_font = pygame.font.Font('assets/roboto.ttf', 35)
+body_font = pygame.font.Font('assets/roboto.ttf', 40)
 
 # set screen padding
 padding = 75
@@ -120,7 +120,7 @@ while True:
                   body_font, 
                   (0, 0, 0), 
                   padding, 
-                  200, 
+                  100, 
                   width - int(padding) * 2, 
                   height - int(padding) * 2
                   ) 

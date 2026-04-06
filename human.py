@@ -35,7 +35,7 @@ temp_screen.fill(background_colour)
 
 # set fonts
 question_font = pygame.font.Font('assets/upheaval.ttf', 40)
-input_font = pygame.font.Font('assets/windows.ttf', 35)
+input_font = pygame.font.Font('assets/windows.ttf', 45)
 
 # set variables for text input (source: https://youtu.be/Rvcyf4HsWiw?si=ZIizByTLaZT7YBHN)
 clock = pygame.time.Clock()
@@ -86,9 +86,10 @@ temp_screen.blit(question, question_rect)
 def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
     words = text.split()
 
+    # split text into lines
     lines = []
     displayed_lines = []
-    while len(words) > 0: # split text into lines
+    while len(words) > 0:
 
         line_words = []
         while len(words) > 0: # loop through words to form lines
@@ -102,6 +103,7 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
         lines.append(line)
         displayed_lines.append(line)
     
+    # print lines individually underneath the other
     y_offset = 0
     for line in lines:
         fw, fh = font.size(line)
@@ -110,11 +112,41 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
         tx = x - fw / 2 # center text
         ty = y + y_offset
 
-        # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
-        font_surface = font.render(line, True, colour)
-        temp_screen.blit(font_surface, (tx, ty))
+        # move the text upwards when height of text box is exceeded
+        if y_offset > allowed_height:
+            # redraw rect to 'clear' screen
+            # NOTE: can I add this into a function for clarity?
+            temp_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows you to draw images to the screen
+            pygame.display.update()
 
-        y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
+            pygame.draw.rect(temp_screen, (194, 243, 232), rect_border, border_radius = 25)
+            pygame.draw.rect(temp_screen, (255, 194, 214), rect, border_radius = 15)
+            pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
+
+            question, question_rect = display_question('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), (rect.y + 75))
+            temp_screen.blit(question, question_rect)
+
+
+            displayed_lines.pop(0) # pop first line
+            displayed_y_offset = 0 # reset y_offset to 0 so it draws from the top again
+            for displayed_line in displayed_lines:
+                fw, fh = font.size(displayed_line)
+
+                tx = x - fw / 2 # center text
+                ty = y + displayed_y_offset
+
+                font_surface = font.render(displayed_line, True, colour)
+                temp_screen.blit(font_surface, (tx, ty))
+
+                displayed_y_offset += fh
+            
+            ty -= fh # reset y level
+
+        else:
+            font_surface = font.render(line, True, colour)
+            temp_screen.blit(font_surface, (tx, ty))
+
+            y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
 
 
 # add submit button (source: https://www.youtube.com/watch?v=G8MYGDf_9ho)
@@ -200,7 +232,7 @@ while True:
                   width / 2, 
                   input_rect.y + int(padding), 
                   input_rect.width - int(padding) * 2, 
-                  input_rect.height - int(padding) * 2,
+                  input_rect.height - int(padding) * 2
                   )
 
         # display button
@@ -213,6 +245,4 @@ while True:
         # display changes to the window
         pygame.display.flip()
         clock.tick(60)
-
-
-# how to change the screen size to whatever the monitor size is
+        
