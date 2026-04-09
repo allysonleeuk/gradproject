@@ -5,16 +5,13 @@ pygame.init()
 import sys
 
 
-# VARIABLES
+# VARIABLES + SETUP
 (width, height) = (1470, 956) #currently set to my mac aspect ratio
 background_colour = (255,255,255)
 
 # load in image and resize it to fit screen
-bg_image = pygame.image.load('assets/tartan.jpg')
+bg_image = pygame.image.load('assets/frutigeraero.jpg')
 bg_image = pygame.transform.scale(bg_image, (width, height))
-
-
-# SETUP
 
 # set screen size
 screen = pygame.display.set_mode((width, height)) # test if it can be resized to fit different screen sizes
@@ -37,9 +34,11 @@ pygame.display.set_caption('robots.txt')
 temp_screen.fill(background_colour)
 
 # set fonts
+name_font = pygame.font.Font('assets/upheaval.ttf', 60) # NOTE: NEW!
+disclaimer_font = pygame.font.Font('assets/upheaval.ttf', 30) # NOTE: NEW!
 question_font = pygame.font.Font('assets/upheaval.ttf', 40)
-# input_font = pygame.font.Font('assets/windows.ttf', 35)
-input_font = pygame.font.Font('assets/windows.ttf', 80)
+input_font = pygame.font.Font('assets/windows.ttf', 45)
+# input_font = pygame.font.Font('assets/windows.ttf', 80) # for testing
 
 # set variables for text input (source: https://youtu.be/Rvcyf4HsWiw?si=ZIizByTLaZT7YBHN)
 clock = pygame.time.Clock()
@@ -63,93 +62,40 @@ temp_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows yo
 pygame.display.update()
 
 # add rect backgrounds
+def draw_rect_alpha(surface, color, rect, radius): # make rects transparent (source: https://stackoverflow.com/questions/6339057/draw-transparent-rectangles-and-polygons-in-pygame)
+    transparent_screen = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
+    pygame.draw.rect(transparent_screen, color, transparent_screen.get_rect(), border_radius = radius)
+    surface.blit(transparent_screen, rect)
+
 rect_border = pygame.Rect(0, 0, (width - 200), (height - 170))
 rect_border.center = (width / 2, height / 2)
-pygame.draw.rect(temp_screen, (194, 243, 232), rect_border, border_radius = 25)
+# pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
+draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
 
 rect = pygame.Rect(0, 0, (width - 240), (height - 210))
 rect.center = (width / 2, height / 2)
-pygame.draw.rect(temp_screen, (255, 194, 214), rect, border_radius = 15)
+# pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
+draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
 
-input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
-input_rect.center = (width / 2, height / 2)
-pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
+# NOTE: NEW!
+name_input_rect = pygame.Rect(0, 0, (width - 800), (height - 750))
+name_input_rect.center = (width / 2, height / 2)
+pygame.draw.rect(temp_screen, (255, 255, 255), name_input_rect, border_radius = 15)
 
 # add question text
-def display_question(question, font, text_colour, y):
+def display_text(question, font, text_colour, y):
     text = font.render(question, True, text_colour) # boolean smooths font
 
     # center text 
     text_rect = text.get_rect(center=(width/2, y))
     return text, text_rect
 
-question, question_rect = display_question('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), (rect.y + 75))
-temp_screen.blit(question, question_rect)
+# NOTE: NEW!
+name, name_rect = display_text('Enter Your Name', name_font, (0, 0, 0), (rect.y + 120))
+temp_screen.blit(name, name_rect)
 
-# wrap text function (source: https://stackoverflow.com/questions/49432109/how-to-wrap-text-in-pygame-using-pygame-font-font)
-def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
-    words = text.split()
-
-    lines = []
-    displayed_lines = []
-    while len(words) > 0: # split text into lines
-
-        line_words = []
-        while len(words) > 0: # loop through words to form lines
-            line_words.append(words.pop(0)) # pop first word
-            fw, fh = font.size(' '.join(line_words + words[:1])) # add the first word back and get the size
-
-            if fw > allowed_width:
-                break
-        
-        line = ' '.join(line_words) # add a line with the selected words
-        lines.append(line)
-        displayed_lines.append(line)
-    
-    y_offset = 0
-    for line in lines:
-        fw, fh = font.size(line)
-
-        # tx, ty is the x and y coords for the toft-left of the font surface
-        tx = x - fw / 2 # center text
-        ty = y + y_offset
-
-        # move the text upwards when height of text box is exceeded
-        if y_offset > allowed_height:
-            # redraw rect to 'clear' screen
-            # NOTE: can I add this into a function for clarity?
-            temp_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows you to draw images to the screen
-            pygame.display.update()
-
-            pygame.draw.rect(temp_screen, (194, 243, 232), rect_border, border_radius = 25)
-            pygame.draw.rect(temp_screen, (255, 194, 214), rect, border_radius = 15)
-            pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
-
-            question, question_rect = display_question('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), (rect.y + 75))
-            temp_screen.blit(question, question_rect)
-
-
-            displayed_lines.pop(0) # pop first line
-            displayed_y_offset = 0 # reset y_offset to 0 so it draws from the top again
-            for displayed_line in displayed_lines:
-                fw, fh = font.size(displayed_line)
-
-                tx = x - fw / 2 # center text
-                ty = y + displayed_y_offset
-
-                font_surface = font.render(displayed_line, True, colour)
-                temp_screen.blit(font_surface, (tx, ty))
-
-                displayed_y_offset += fh
-            
-            ty -= fh # reset y level
-
-        else:
-            font_surface = font.render(line, True, colour)
-            temp_screen.blit(font_surface, (tx, ty))
-
-            y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
-
+disclaimer, disclaimer_rect = display_text('*Leave name empty to remain anonymous', disclaimer_font, (0, 0, 0), (rect.y + 180))
+temp_screen.blit(disclaimer, disclaimer_rect)
 
 # add submit button (source: https://www.youtube.com/watch?v=G8MYGDf_9ho)
 submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
@@ -179,7 +125,8 @@ class Button(): # button class
         # draw button to screen
         temp_screen.blit(self.image, (self.rect.x, self.rect.y))
 
-submit_button = Button(height - 200, submit_button_img, 1) # create button instance
+# NOTE: NEW!
+name_submit_button = Button(height - 250, submit_button_img, 1) # create button instance
 
 # ·················•·················• ★ •·················•·················
 
@@ -196,7 +143,7 @@ while True:
             
         # only let the user type when text box is selected
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if input_rect.collidepoint(event.pos):
+            if name_input_rect.collidepoint(event.pos):
                 active = True
             else:
                 active = False
@@ -216,29 +163,20 @@ while True:
             screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
         
         # text input function
-        input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
-        input_rect.center = (width / 2, height / 2)
-        pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
+        name_input_rect = pygame.Rect(0, 0, (width - 800), (height - 750))
+        name_input_rect.center = (width / 2, height / 2)
+        pygame.draw.rect(temp_screen, (255, 255, 255), name_input_rect, border_radius = 15)
         
         if active:
-            input_rect_border = pygame.Rect(0, 0, (width - 500), (height - 550))
-            input_rect_border.center = (width / 2, height / 2)
-            pygame.draw.rect(temp_screen, (194, 243, 232), input_rect_border, 5, border_radius = 15)
+            name_input_rect_border = pygame.Rect(0, 0, (width - 800), (height - 750))
+            name_input_rect_border.center = (width / 2, height / 2)
+            pygame.draw.rect(temp_screen, (30, 180, 221), name_input_rect_border, 5, border_radius = 15)
         
         padding = 20
-        # text_surface = input_font.render(user_text, True, (0, 0, 0))
-        # temp_screen.blit(text_surface, (input_rect.x + padding, input_rect.y + padding))
-        wrap_text(user_text, 
-                  input_font, 
-                  (0, 0, 0), 
-                  width / 2, 
-                  input_rect.y + int(padding), 
-                  input_rect.width - int(padding) * 2, 
-                  input_rect.height - int(padding) * 2
-                  )
-
+        
+        # NOTE: NEW!
         # display button
-        submit_button.draw()
+        name_submit_button.draw()
 
 
         # draw fake screen to screen, have it transform when window size changes
@@ -247,6 +185,4 @@ while True:
         # display changes to the window
         pygame.display.flip()
         clock.tick(60)
-
-
-# how to change the screen size to whatever the monitor size is
+        
