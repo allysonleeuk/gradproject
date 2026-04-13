@@ -118,7 +118,7 @@ while True:
 
         display_text(bot_inputs, 
                   body_font, 
-                  (0, 0, 0), 
+                  (255, 255, 255), 
                   padding, 
                   100, 
                   width - int(padding) * 2, 
