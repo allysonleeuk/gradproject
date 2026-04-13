@@ -92,7 +92,13 @@ class Change_Button(): # button class
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1: # 0 indicates a left click
-                main_screen()
+                global user_name
+                
+                name_array.append(user_name)
+                user_name = ''
+
+                global main_screen_active
+                main_screen_active = True
 
         # draw button to screen
         temp_screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -112,12 +118,17 @@ class Submit_Button(): # button class
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1: # 0 indicates a left click
                 global user_text # change to global variable so I can reset it
+                global input_parts
 
                 final_inputs.append(user_text)
                 user_text = '' # reset user_text to an empty string
+                input_parts = [] # reset input_parts to an empty string
 
                 # print(final_inputs)
                 # print(user_text)
+
+                global main_screen_active
+                main_screen_active = False
 
         # draw button to screen
         temp_screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -220,7 +231,41 @@ temp_screen.blit(disclaimer, disclaimer_rect)
 
 # add submit button
 submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
+
 change_button = Change_Button(height - 250, submit_button_img, 1) # create button instance
+
+def name_screen():
+    # add background image
+    temp_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows you to draw images to the screen
+    pygame.display.update()
+
+    # add rect backgrounds
+    rect_border = pygame.Rect(0, 0, (width - 200), (height - 170))
+    rect_border.center = (width / 2, height / 2)
+    # pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
+    draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
+
+    rect = pygame.Rect(0, 0, (width - 240), (height - 210))
+    rect.center = (width / 2, height / 2)
+    # pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
+    draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
+
+    name_input_rect = pygame.Rect(0, 0, (width - 800), (height - 750))
+    name_input_rect.center = (width / 2, height / 2)
+    pygame.draw.rect(temp_screen, (255, 255, 255), name_input_rect, border_radius = 15)
+
+    # add name and disclaimer text text
+    name, name_rect = display_text('Enter Your Name', name_font, (0, 0, 0), (rect.y + 120))
+    temp_screen.blit(name, name_rect)
+
+    # add question text
+    disclaimer, disclaimer_rect = display_text('*Leave name empty to remain anonymous', disclaimer_font, (0, 0, 0), (rect.y + 180))
+    temp_screen.blit(disclaimer, disclaimer_rect)
+
+    # add submit button
+    submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
+
+    change_button = Change_Button(height - 250, submit_button_img, 1) # create button instance
 
 
 # ·················•·················• MAIN SCREEN •·················•·················
@@ -249,6 +294,8 @@ def main_screen():
 
     # add submit button
     submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
+    
+    global submit_button
     submit_button = Submit_Button(height - 200, submit_button_img, 1) # create button instance
 
 # ·················•·················• ★ •·················•·················
@@ -261,6 +308,8 @@ while True:
 
         
         if main_screen_active == False: # NAME SCREEN
+            name_screen()
+
             # text input rect
             name_input_rect = pygame.Rect(0, 0, (width - 800), (height - 750))
             name_input_rect.center = (width / 2, height / 2)
@@ -301,6 +350,8 @@ while True:
             change_button.draw()
             
         if main_screen_active == True: # MAIN SCREEN
+            main_screen()
+
             # text input rect
             input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
             input_rect.center = (width / 2, height / 2)
@@ -350,7 +401,7 @@ while True:
                     )
             
             # display button
-            # submit_button.draw() # NOTE: fix this
+            submit_button.draw()
 
 
         if event.type == pygame.VIDEORESIZE:
