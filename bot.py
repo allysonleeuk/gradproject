@@ -55,6 +55,7 @@ temp_screen.blit(title, title_rect)
 
 # display text function
 # NOTE: for now only intaking bot inputs -- have to figure out how to use this with an updating array and how to combine with the user input array
+# NOTE: make it look like its typing (like one word at a time)
 def display_text(array, font, colour, x, y, allowed_width, allowed_height):
     text_gap = 50
     for text in array:
