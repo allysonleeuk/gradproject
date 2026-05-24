@@ -3,7 +3,6 @@ import pygame
 pygame.init()
 
 import sys
-from multiprocessing import Pipe
 
 
 # VARIABLES + SETUP
@@ -405,11 +404,11 @@ while True:
             # display button
             submit_button.draw()
         
-        # multiprocessing function to transmit data to separate file live
-        def transmit_input(child_conn):
-            msg = input_parts[-1]
-            child_conn.send(msg)
-            child_conn.close()
+        # # multiprocessing function to transmit data to separate file live
+        # def transmit_input(child_conn):
+        #     msg = input_parts[-1]
+        #     child_conn.send(msg)
+        #     child_conn.close()
 
 
         if event.type == pygame.VIDEORESIZE:

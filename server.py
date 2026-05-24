@@ -1,6 +1,6 @@
-# imports
+# server = the one receiving the data
+
 import socket
-from ollama import chat
 
 host = "127.0.0.1"
 port = 65432 # any number higher than 1023
@@ -22,13 +22,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             
             print(data.decode('utf-8'))
 
-# define a system prompt
-system_prompt = "You have a bias towards bots and artificial intelligence."
+# s.close()
 
-# chat with a system prompt
-response = chat('llama3.2:1b', 
-                messages=[
-                    {'role': 'system', 'content': system_prompt},
-                    {'role': 'user', 'content': f'Complete this sentence with the next 5 words: {data}'}
-                ])
-print(response.message.content)
