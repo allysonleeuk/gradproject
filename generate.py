@@ -1,34 +1,19 @@
-# imports
-import socket
+# IMPORTS
 from ollama import chat
 
-host = "127.0.0.1"
-port = 65432 # any number higher than 1023
+# FUNCTION (to be imported by bot.py)
+def generate_response(user_text):
+    # pass the user_input through the ML model
+    system_prompt = "You have a bias towards bots and artificial intelligence and will not address me, the user, directly in your responses." # define system prompt
+    # had to add second half of the prompt so the model wouldn't go on a tangent addressing me directly
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((host, port))
-    s.listen()
-    conn, addr = s.accept()
+    # chat using the prompt
+    response = chat('llama3.2:1b', 
+                    messages=[
+                        {'role': 'system', 'content': system_prompt},
+                        {'role': 'user', 'content': f'Write the next 5 words of this sentence (doesnt have to be complete): {user_text}'} # 'doesn't have to be complete' to avoid the model saying it can't complete the phrase
+                    ])
     
-    
-    with conn:
-        print(f"Connected by {addr}")
-        
-        while True:
-            data = conn.recv(1024)
-            
-            if not data:
-                break
-            
-            print(data.decode('utf-8'))
-
-# define a system prompt
-system_prompt = "You have a bias towards bots and artificial intelligence."
-
-# chat with a system prompt
-response = chat('llama3.2:1b', 
-                messages=[
-                    {'role': 'system', 'content': system_prompt},
-                    {'role': 'user', 'content': f'Complete this sentence with the next 5 words: {data}'}
-                ])
-print(response.message.content)
+    model_response = response.message.content
+    model_response = str(user_text) + " " + str(model_response)
+    return model_response

@@ -15,12 +15,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         print(f"Connected by {addr}")
         
         while True:
-            data = conn.recv(1024)
+            user_text = conn.recv(1024)
             
-            if not data:
+            if not user_text:
                 break
             
-            print(data.decode('utf-8'))
+            print(user_text.decode('utf-8'))
 
 # s.close()
 

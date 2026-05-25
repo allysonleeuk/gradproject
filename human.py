@@ -3,10 +3,13 @@ import pygame
 pygame.init()
 
 import sys
+import socket
+import time
 
 
 # VARIABLES + SETUP
-(width, height) = (1470, 956) #currently set to my mac aspect ratio
+# (width, height) = (1470, 956) # currently set to my mac aspect ratio
+(width, height) = (735, 930) # for split screen
 background_colour = (255,255,255)
 
 # load in image and resize it to fit screen
@@ -46,21 +49,29 @@ clock = pygame.time.Clock()
 user_text = ''
 user_name = ''
 
-# temporary variables + stored variables (NOTE: will these be on a different page or draw on the same screen and clear?)
-input_date = ''
-input_time = ''
+# temporary variables + stored variables
+input_date = '' # NOTE: ADD THIS, AND SEND TO ARDUINO
+input_time = '' # NOTE: ADD THIS, AND SEND TO ARDUINO
 
-input_parts = [] # save the input in parts so I can send data to the machine learning aspect
-final_inputs = []
-name_array = []
-date_array = []
-time_array = []
+final_inputs = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
+name_array = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
+# date_array = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
+# time_array = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
 
 # booleans
 main_screen_active = False
 
 name_active = False
 main_active = False
+
+# socket setup
+host = "127.0.0.1"
+port = 65432 # any number higher than 1023
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((host, port))
+
+last_sent_time = 0 # timer
 
 # ·················•·················• FUNCTIONS ETC. •·················•·················
 
@@ -166,7 +177,7 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
 
         # move the text upwards when height of text box is exceeded
         if y_offset > allowed_height:
-            # redraw rect to 'clear' screen
+            # redraw whole screen to 'clear' screen
             # NOTE: can I add this into a function for clarity?
             temp_screen.blit(bg_image, (0, 0))
             pygame.display.update()
@@ -306,6 +317,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+            s.close() # close socket connections
 
         
         if main_screen_active == False: # NAME SCREEN
@@ -364,24 +376,14 @@ while True:
                     main_active = True
                 else:
                     main_active = False
-
-            # only let the user type when text box is selected
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if name_input_rect.collidepoint(event.pos):
-                    name_active = True
-                else:
-                    name_active = False
                 
             # typing function
             if event.type == pygame.KEYDOWN:
-                if name_active == True:
+                if main_active == True:
                     if event.key == pygame.K_BACKSPACE:
                         user_text = user_text[:-1] # remove last character
                     else:
                         user_text += event.unicode
-                    
-                    # append current text to array after every keystroke (most recent  be sent to other screen in intervals)
-                    input_parts.append(user_text) # NOTE: will this make the array too large?
             
             # create a border on the input rect when active
             if main_active == True:
@@ -403,12 +405,14 @@ while True:
             
             # display button
             submit_button.draw()
+            
+        # open socket connection to transfer current user input to generate.py
+        # send every __ seconds
+        current_time = time.time()
         
-        # # multiprocessing function to transmit data to separate file live
-        # def transmit_input(child_conn):
-        #     msg = input_parts[-1]
-        #     child_conn.send(msg)
-        #     child_conn.close()
+        if current_time - last_sent_time >= 5:
+            s.send(user_text.encode())
+            last_sent_time = current_time
 
 
         if event.type == pygame.VIDEORESIZE:

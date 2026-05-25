@@ -1,8 +1,16 @@
 # IMPORTS
 import pygame
 pygame.init()
-
 import sys
+
+# ML model and socket setup
+from generate import generate_response # import the ML model function
+latest_response = ''
+
+import socket
+import threading
+host = "127.0.0.1"
+port = 65432
 
 
 # VARIABLES + SETUP
@@ -37,10 +45,53 @@ body_font = pygame.font.Font('assets/roboto.ttf', 40)
 padding = 75
 
 # set arrays
-user_inputs = [] # array that will receive user inputs
-bot_inputs = ["i love", "i love bots", "i love bots so", "i love bots so much"] # array that will receive bot inputs from the text prediction model
+# bot_inputs = ["i love", "i love bots", "i love bots so", "i love bots so much"] # array that will receive bot inputs from the text prediction model
 
-# ·················•·················• ★ •·················•·················
+# ·················•·················• SOCKET FUNCTIONS •·················•·················
+# client handler: to isolate client's connection from the pygame code
+def handle_client(conn, addr):
+    global latest_response
+    
+    print(f"Connected by {addr}")
+    with conn:
+        while True:
+            user_text = conn.recv(1024)
+            
+            if not user_text:
+                break
+            
+            decoded_text = str(user_text.decode('utf-8'))
+            # print(decoded_text)
+            
+            latest_response = generate_response(decoded_text)
+            print(latest_response)
+
+# server thread  
+def start_server():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, port))
+        s.listen()
+        
+        while True:
+            conn, addr = s.accept()
+
+            client_thread = threading.Thread(
+                target=handle_client,
+                args=(conn, addr),
+                daemon=True
+            )
+
+            client_thread.start()
+            
+# start server in the background so it stops interfering with the pygame section of the code
+server_thread = threading.Thread(
+    target=start_server,
+    daemon=True
+)
+
+server_thread.start()
+
+# ·················•·················• FUNCTIONS •·················•·················
 
 # add title text
 def display_title(title, font, text_colour, y):
@@ -54,51 +105,113 @@ title, title_rect = display_title('I THINK YOU MEANT TO SAY...', title_font, (25
 temp_screen.blit(title, title_rect)
 
 # display text function
-# NOTE: for now only intaking bot inputs -- have to figure out how to use this with an updating array and how to combine with the user input array
-# NOTE: make it look like its typing (like one word at a time)
-def display_text(array, font, colour, x, y, allowed_width, allowed_height):
-    text_gap = 50
-    for text in array:
-        y = y + text_gap
-        words = text.split()
+# def display_text(array, font, colour, x, y, allowed_width, allowed_height):
+#     text_gap = 50
+#     for text in array:
+#         y = y + text_gap
+#         words = text.split()
 
-        # split text into lines
-        lines = []
-        while len(words) > 0:
+#         # split text into lines
+#         lines = []
+#         while len(words) > 0:
 
-            line_words = []
-            while len(words) > 0: # loop through words to form lines
-                line_words.append(words.pop(0)) # pop first word
-                fw, fh = font.size(' '.join(line_words + words[:1])) # add the first word back and get the size
+#             line_words = []
+#             while len(words) > 0: # loop through words to form lines
+#                 line_words.append(words.pop(0)) # pop first word
+#                 fw, fh = font.size(' '.join(line_words + words[:1])) # add the first word back and get the size
 
-                if fw > allowed_width:
-                    break
+#                 if fw > allowed_width:
+#                     break
             
-            line = ' '.join(line_words) # add a line with the selected words
-            line = '> ' + line
-            lines.append(line)
+#             line = ' '.join(line_words) # add a line with the selected words
+#             line = '> ' + line
+#             lines.append(line)
         
-        # print lines individually underneath the other
-        y_offset = 0
-        for line in lines:
-            fw, fh = font.size(line)
+#         # print lines individually underneath the other
+#         y_offset = 0
+#         for line in lines:
+#             fw, fh = font.size(line)
 
-            # tx, ty is the x and y coords for the top-left of the font surface
-            tx = x
-            ty = y + y_offset
+#             # tx, ty is the x and y coords for the top-left of the font surface
+#             tx = x
+#             ty = y + y_offset
 
-            # # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
-            # if y_offset + fh > allowed_height:
-            #     displayed_lines.pop(0) # pop first line
-            #     ty -= fh
+#             # # NOTE: how do you 'move the text upwards' and bring it back when you go back up to the previous line?
+#             # if y_offset + fh > allowed_height:
+#             #     displayed_lines.pop(0) # pop first line
+#             #     ty -= fh
 
-            #     font_surface = font.render(line, True, colour)
-            #     temp_screen.blit(font_surface, (tx, ty))
-            # else:
+#             #     font_surface = font.render(line, True, colour)
+#             #     temp_screen.blit(font_surface, (tx, ty))
+#             # else:
+#             font_surface = font.render(line, True, colour)
+#             temp_screen.blit(font_surface, (tx, ty))
+
+#             y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
+
+# NOTE: this is the full version, will have to edit when the text starts actually reacting instead of hard-coded tests
+def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
+    words = text.split()
+
+    # split text into lines
+    lines = []
+    displayed_lines = []
+    while len(words) > 0:
+
+        line_words = []
+        while len(words) > 0: # loop through words to form lines
+            line_words.append(words.pop(0)) # pop first word
+            fw, fh = font.size(' '.join(line_words + words[:1])) # add the first word back and get the size
+
+            if fw > allowed_width:
+                break
+        
+        line = ' '.join(line_words) # add a line with the selected words
+        lines.append(line)
+        line = '> ' + line
+        displayed_lines.append(line)
+    
+    # print lines individually underneath the other
+    y_offset = 0
+    for line in lines:
+        fw, fh = font.size(line)
+
+        # tx, ty is the x and y coords for the toft-left of the font surface
+        tx = x
+        ty = y + y_offset
+
+        # move the text upwards when height of screen is exceeded
+        if y_offset > allowed_height:
+            # redraw rect to 'clear' screen
+            temp_screen.fill(background_colour)
+            pygame.display.update()
+
+            title, title_rect = display_title('I THINK YOU MEANT TO SAY...', title_font, (255, 255, 255), padding)
+            temp_screen.blit(title, title_rect)
+
+
+            displayed_lines.pop(0) # pop first line
+            displayed_y_offset = 0 # reset y_offset to 0 so it draws from the top again
+            for displayed_line in displayed_lines:
+                fw, fh = font.size(displayed_line)
+
+                tx = x - fw / 2 # center text
+                ty = y + displayed_y_offset
+
+                font_surface = font.render(displayed_line, True, colour)
+                temp_screen.blit(font_surface, (tx, ty))
+
+                displayed_y_offset += fh
+            
+            ty -= fh # reset y level
+
+        else:
             font_surface = font.render(line, True, colour)
             temp_screen.blit(font_surface, (tx, ty))
 
             y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
+    
+
 
 # ·················•·················• ★ •·················•·················
 
@@ -117,11 +230,11 @@ while True:
             screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
 
 
-        display_text(bot_inputs, 
+        wrap_text(latest_response, 
                   body_font, 
                   (255, 255, 255), 
                   padding, 
-                  100, 
+                  150, 
                   width - int(padding) * 2, 
                   height - int(padding) * 2
                   ) 
