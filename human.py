@@ -9,7 +9,7 @@ import time
 
 # VARIABLES + SETUP
 # (width, height) = (1470, 956) # currently set to my mac aspect ratio
-(width, height) = (735, 930) # for split screen
+(width, height) = (734, 830) # for split screen
 background_colour = (255,255,255)
 
 # load in image and resize it to fit screen
@@ -25,7 +25,7 @@ screen = pygame.display.set_mode((width, height)) # test if it can be resized to
 # DISPLAYSURF = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 # test if it can be resized to fit different screen sizes
-screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+# screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
 # create a 'fake screen' to resize elements (source: https://stackoverflow.com/a/34919705)
 temp_screen = screen.copy()
@@ -37,12 +37,11 @@ pygame.display.set_caption('robots.txt')
 temp_screen.fill(background_colour)
 
 # set fonts
-name_font = pygame.font.Font('assets/upheaval.ttf', 60)
-disclaimer_font = pygame.font.Font('assets/upheaval.ttf', 30)
-question_font = pygame.font.Font('assets/upheaval.ttf', 40)
-name_input_font = pygame.font.Font('assets/windows.ttf', 80)
-input_font = pygame.font.Font('assets/windows.ttf', 45)
-# input_font = pygame.font.Font('assets/windows.ttf', 80) # for testing
+name_font = pygame.font.Font('assets/upheaval.ttf', 52)
+disclaimer_font = pygame.font.Font('assets/upheaval.ttf', 22)
+question_font = pygame.font.Font('assets/upheaval.ttf', 30)
+name_input_font = pygame.font.Font('assets/windows.ttf', 48)
+input_font = pygame.font.Font('assets/windows.ttf', 38)
 
 # set variables for text input (source: https://youtu.be/Rvcyf4HsWiw?si=ZIizByTLaZT7YBHN)
 clock = pygame.time.Clock()
@@ -185,9 +184,16 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
             draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
             draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
             pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
+            
+            # simulates that input box is active (main_active) -> once the screen clears it stops and I'm not sure how to amend that
+            input_rect_border = pygame.Rect(0, 0, (width - 150), (height - 300))
+            input_rect_border.center = (width / 2, height / 2)
+            pygame.draw.rect(temp_screen, (30, 180, 221), input_rect_border, 5, border_radius = 15)
 
-            question, question_rect = display_text('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), (rect.y + 75))
-            temp_screen.blit(question, question_rect)
+            question1, question1_rect = display_text('What do you dislike about', question_font, (0, 0, 0), (rect.y + 40))
+            question2, question2_rect = display_text('the modern-day internet?', question_font, (0, 0, 0), (rect.y + 65))
+            temp_screen.blit(question1, question1_rect)
+            temp_screen.blit(question2, question2_rect)
 
 
             displayed_lines.pop(0) # pop first line
@@ -219,32 +225,31 @@ temp_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows yo
 pygame.display.update()
 
 # add rect backgrounds
-rect_border = pygame.Rect(0, 0, (width - 200), (height - 170))
+rect_border = pygame.Rect(0, 0, (width - 60), (height - 60))
 rect_border.center = (width / 2, height / 2)
 # pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
 draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
 
-rect = pygame.Rect(0, 0, (width - 240), (height - 210))
+rect = pygame.Rect(0, 0, (width - 90), (height - 90))
 rect.center = (width / 2, height / 2)
 # pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
 draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
 
-name_input_rect = pygame.Rect(0, 0, (width - 800), (height - 750))
+name_input_rect = pygame.Rect(0, 0, (width - 280), (height - 700))
 name_input_rect.center = (width / 2, height / 2)
 pygame.draw.rect(temp_screen, (255, 255, 255), name_input_rect, border_radius = 15)
 
 # add name and disclaimer text text
-name, name_rect = display_text('Enter Your Name', name_font, (0, 0, 0), (rect.y + 120))
+name, name_rect = display_text('Enter Your Name', name_font, (0, 0, 0), (rect.y + 75))
 temp_screen.blit(name, name_rect)
 
-# add question text
-disclaimer, disclaimer_rect = display_text('*Leave name empty to remain anonymous', disclaimer_font, (0, 0, 0), (rect.y + 180))
+disclaimer, disclaimer_rect = display_text('*Leave name empty to remain anonymous', disclaimer_font, (0, 0, 0), (rect.y + 115))
 temp_screen.blit(disclaimer, disclaimer_rect)
 
 # add submit button
 submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
 
-change_button = Change_Button(height - 250, submit_button_img, 1) # create button instance
+change_button = Change_Button(height - 275, submit_button_img, 0.8) # create button instance
 
 def name_screen():
     # add background image
@@ -252,32 +257,31 @@ def name_screen():
     pygame.display.update()
 
     # add rect backgrounds
-    rect_border = pygame.Rect(0, 0, (width - 200), (height - 170))
+    rect_border = pygame.Rect(0, 0, (width - 60), (height - 60))
     rect_border.center = (width / 2, height / 2)
     # pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
     draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
 
-    rect = pygame.Rect(0, 0, (width - 240), (height - 210))
+    rect = pygame.Rect(0, 0, (width - 90), (height - 90))
     rect.center = (width / 2, height / 2)
     # pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
     draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
 
-    name_input_rect = pygame.Rect(0, 0, (width - 800), (height - 750))
+    name_input_rect = pygame.Rect(0, 0, (width - 280), (height - 700))
     name_input_rect.center = (width / 2, height / 2)
     pygame.draw.rect(temp_screen, (255, 255, 255), name_input_rect, border_radius = 15)
 
     # add name and disclaimer text text
-    name, name_rect = display_text('Enter Your Name', name_font, (0, 0, 0), (rect.y + 120))
+    name, name_rect = display_text('Enter Your Name', name_font, (0, 0, 0), (rect.y + 200))
     temp_screen.blit(name, name_rect)
 
-    # add question text
-    disclaimer, disclaimer_rect = display_text('*Leave name empty to remain anonymous', disclaimer_font, (0, 0, 0), (rect.y + 180))
+    disclaimer, disclaimer_rect = display_text('*Leave name empty to remain anonymous', disclaimer_font, (0, 0, 0), (rect.y + 240))
     temp_screen.blit(disclaimer, disclaimer_rect)
 
     # add submit button
     submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
 
-    change_button = Change_Button(height - 250, submit_button_img, 1) # create button instance
+    change_button = Change_Button(height - 275, submit_button_img, 0.8) # create button instance
 
 
 # ·················•·················• MAIN SCREEN •·················•·················
@@ -286,29 +290,27 @@ def main_screen():
     temp_screen.blit(bg_image, (0, 0)) # pygame.blit() = thin wrapper that allows you to draw images to the screen
     pygame.display.update()
 
-    rect_border = pygame.Rect(0, 0, (width - 200), (height - 170))
+    rect_border = pygame.Rect(0, 0, (width - 60), (height - 60))
     rect_border.center = (width / 2, height / 2)
     # pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
     draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
 
-    rect = pygame.Rect(0, 0, (width - 240), (height - 210))
+    rect = pygame.Rect(0, 0, (width - 90), (height - 90))
     rect.center = (width / 2, height / 2)
     # pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
     draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
 
-    # input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
-    # input_rect.center = (width / 2, height / 2)
-    # pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
-
     # add question text
-    question, question_rect = display_text('What do you dislike about the modern-day internet?', question_font, (0, 0, 0), (rect.y + 75))
-    temp_screen.blit(question, question_rect)
+    question1, question1_rect = display_text('What do you dislike about', question_font, (0, 0, 0), (rect.y + 40))
+    question2, question2_rect = display_text('the modern-day internet?', question_font, (0, 0, 0), (rect.y + 65))
+    temp_screen.blit(question1, question1_rect)
+    temp_screen.blit(question2, question2_rect)
 
     # add submit button
     submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
     
     global submit_button
-    submit_button = Submit_Button(height - 200, submit_button_img, 1) # create button instance
+    submit_button = Submit_Button(height - 100, submit_button_img, 0.8) # create button instance
 
 # ·················•·················• ★ •·················•·················
 
@@ -324,7 +326,7 @@ while True:
             name_screen()
 
             # text input rect
-            name_input_rect = pygame.Rect(0, 0, (width - 800), (height - 750))
+            name_input_rect = pygame.Rect(0, 0, (width - 280), (height - 700))
             name_input_rect.center = (width / 2, height / 2)
             pygame.draw.rect(temp_screen, (255, 255, 255), name_input_rect, border_radius = 15)
 
@@ -345,7 +347,7 @@ while True:
             
             # create a border on the input rect when active
             if name_active == True:
-                name_input_rect_border = pygame.Rect(0, 0, (width - 800), (height - 750))
+                name_input_rect_border = pygame.Rect(0, 0, (width - 280), (height - 700))
                 name_input_rect_border.center = (width / 2, height / 2)
                 pygame.draw.rect(temp_screen, (30, 180, 221), name_input_rect_border, 5, border_radius = 15)
             
@@ -354,7 +356,7 @@ while True:
                     name_input_font, 
                     (0, 0, 0), 
                     width / 2, 
-                    name_input_rect.y + 50, # NOTE: fix this
+                    name_input_rect.y + 38, # NOTE: fix this
                     name_input_rect.width - int(padding) * 2, 
                     name_input_rect.height - int(padding) * 2
                     )
@@ -366,7 +368,7 @@ while True:
             main_screen()
 
             # text input rect
-            input_rect = pygame.Rect(0, 0, (width - 500), (height - 550))
+            input_rect = pygame.Rect(0, 0, (width - 150), (height - 300))
             input_rect.center = (width / 2, height / 2)
             pygame.draw.rect(temp_screen, (255, 255, 255), input_rect, border_radius = 15)
 
@@ -387,7 +389,7 @@ while True:
             
             # create a border on the input rect when active
             if main_active == True:
-                input_rect_border = pygame.Rect(0, 0, (width - 500), (height - 550))
+                input_rect_border = pygame.Rect(0, 0, (width - 150), (height - 300))
                 input_rect_border.center = (width / 2, height / 2)
                 pygame.draw.rect(temp_screen, (30, 180, 221), input_rect_border, 5, border_radius = 15)
 
@@ -399,8 +401,8 @@ while True:
                     (0, 0, 0), 
                     width / 2, 
                     input_rect.y + int(padding), 
-                    input_rect.width - int(padding) * 2, 
-                    input_rect.height - int(padding) * 2
+                    input_rect.width - (int(padding) * 3), 
+                    input_rect.height - (int(padding) * 3)
                     )
             
             # display button
