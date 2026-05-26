@@ -13,6 +13,8 @@ import threading
 host = "127.0.0.1"
 port = 65432
 
+import serial
+
 
 # VARIABLES + SETUP
 # (width, height) = (1470, 956) #currently set to my mac aspect ratio
@@ -45,6 +47,12 @@ body_font = pygame.font.Font('assets/roboto.ttf', 30)
 
 # set screen padding
 padding = 40
+
+# arduino setup
+BAUD = 9600
+# NOTE: check your own arduino when u get home
+ARDUINOPORT = '/dev/cu.usbmodem48CA43547B4C2' # serial port of arduino
+ser = serial.Serial(ARDUINOPORT, BAUD)
 
 # ·················•·················• SOCKET FUNCTIONS •·················•·················
 # client handler: to isolate client's connection from the pygame code
@@ -190,6 +198,8 @@ while True:
 
         title, title_rect = display_title('I THINK YOU MEANT TO SAY...', title_font, (255, 255, 255), padding)
         temp_screen.blit(title, title_rect)
+        
+        ser.write(f"{latest_response}\n".encode())
     else:
         wrap_text(latest_response, 
                     body_font, 

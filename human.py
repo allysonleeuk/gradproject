@@ -5,6 +5,9 @@ pygame.init()
 import sys
 import socket
 import time
+from datetime import datetime
+
+import serial
 
 
 # VARIABLES + SETUP
@@ -47,15 +50,7 @@ input_font = pygame.font.Font('assets/windows.ttf', 38)
 clock = pygame.time.Clock()
 user_text = ''
 user_name = ''
-
-# temporary variables + stored variables
-input_date = '' # NOTE: ADD THIS, AND SEND TO ARDUINO
-input_time = '' # NOTE: ADD THIS, AND SEND TO ARDUINO
-
-final_inputs = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
-name_array = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
-# date_array = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
-# time_array = [] # NOTE: DO I NEED TO STORE THIS??? I'M SENDING IT IMMEDIATELY
+input_datetime = '' # NOTE: ADD THIS, AND SEND TO ARDUINO
 
 # booleans
 main_screen_active = False
@@ -71,6 +66,13 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host, port))
 
 last_sent_time = 0 # timer
+
+# arduino setup
+BAUD = 9600
+# NOTE: check your own arduino when u get home
+ARDUINOPORT = '/dev/cu.usbmodem48CA43547B4C2' # serial port of arduino
+ser = serial.Serial(ARDUINOPORT, BAUD)
+
 
 # ·················•·················• FUNCTIONS ETC. •·················•·················
 
@@ -103,11 +105,6 @@ class Change_Button(): # button class
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1: # 0 indicates a left click
-                global user_name
-                
-                name_array.append(user_name)
-                user_name = ''
-
                 global main_screen_active
                 main_screen_active = True
 
@@ -129,14 +126,21 @@ class Submit_Button(): # button class
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1: # 0 indicates a left click
                 global user_text # change to global variable so I can reset it
-                global input_parts
-
-                final_inputs.append(user_text)
-                user_text = '' # reset user_text to an empty string
-                input_parts = [] # reset input_parts to an empty string
-
-                # print(final_inputs)
+                global user_name
+                global input_datetime
+                
+                # NOTE: format date?
+                now = datetime.now()
+                input_datetime = str(now)
+                
+                ser.write(f"{user_text},{user_name},{input_datetime}\n".encode()) 
                 # print(user_text)
+                # print(user_name)
+                # print(input_datetime)
+                
+                user_text = '' # reset user_text to an empty string
+                user_name = ''
+                input_datetime = ''
 
                 global main_screen_active
                 main_screen_active = False
