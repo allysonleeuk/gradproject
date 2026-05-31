@@ -21,20 +21,12 @@ bg_image = pygame.transform.scale(bg_image, (width, height))
 
 # set screen size
 screen = pygame.display.set_mode((width, height)) # test if it can be resized to fit different screen sizes
-# current_screen = pygame.display.get_desktop_sizes()
-# print(current_screen)
-
-# ENABLE WHEN CODING ON MAC
-# DISPLAYSURF = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-
-# test if it can be resized to fit different screen sizes
-# screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
 # create a 'fake screen' to resize elements (source: https://stackoverflow.com/a/34919705)
 temp_screen = screen.copy()
 
 # set window name
-pygame.display.set_caption('robots.txt')
+pygame.display.set_caption('human-side')
 
 #set background colour
 temp_screen.fill(background_colour)
@@ -44,7 +36,7 @@ name_font = pygame.font.Font('assets/upheaval.ttf', 52)
 disclaimer_font = pygame.font.Font('assets/upheaval.ttf', 22)
 question_font = pygame.font.Font('assets/upheaval.ttf', 30)
 name_input_font = pygame.font.Font('assets/windows.ttf', 48)
-input_font = pygame.font.Font('assets/windows.ttf', 38)
+input_font = pygame.font.Font('assets/windows.ttf', 35)
 
 # set variables for text input (source: https://youtu.be/Rvcyf4HsWiw?si=ZIizByTLaZT7YBHN)
 clock = pygame.time.Clock()
@@ -67,11 +59,10 @@ s.connect((host, port))
 
 last_sent_time = 0 # timer
 
-# arduino setup
-BAUD = 9600
-# NOTE: check your own arduino when u get home
-ARDUINOPORT = '/dev/cu.usbmodem48CA43547B4C2' # serial port of arduino
-ser = serial.Serial(ARDUINOPORT, BAUD)
+# # arduino setup
+# BAUD = 9600
+# ARDUINOPORT = '/dev/cu.usbmodem64E83367C3C02' # serial port of arduino
+# ser = serial.Serial(ARDUINOPORT, BAUD)
 
 
 # ·················•·················• FUNCTIONS ETC. •·················•·················
@@ -96,7 +87,7 @@ class Change_Button(): # button class
         img_width = image.get_width()
         img_height = image.get_height()
 
-        self.image = pygame.transform.scale(image, (int(img_width * scale), int(img_height * scale)))
+        self.image = pygame.transform.smoothscale(image, (int(img_width * scale), int(img_height * scale)))
         self.rect = self.image.get_rect(center=(width/2, y))
 
     def draw(self): # draw button on screen
@@ -129,11 +120,11 @@ class Submit_Button(): # button class
                 global user_name
                 global input_datetime
                 
-                # NOTE: format date?
-                now = datetime.now()
+                now = datetime.now().replace(microsecond=0)
                 input_datetime = str(now)
                 
-                ser.write(f"{user_text},{user_name},{input_datetime}\n".encode()) 
+                # ser.write(f"{user_text}|{user_name}|{input_datetime}\n".encode())
+                
                 # print(user_text)
                 # print(user_name)
                 # print(input_datetime)
@@ -174,14 +165,13 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
     for line in lines:
         fw, fh = font.size(line)
 
-        # tx, ty is the x and y coords for the toft-left of the font surface
+        # tx, ty is the x and y coords for the top-left of the font surface
         tx = x - fw / 2 # center text
         ty = y + y_offset
 
         # move the text upwards when height of text box is exceeded
         if y_offset > allowed_height:
             # redraw whole screen to 'clear' screen
-            # NOTE: can I add this into a function for clarity?
             temp_screen.blit(bg_image, (0, 0))
             pygame.display.update()
 
@@ -198,7 +188,6 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
             question2, question2_rect = display_text('the modern-day internet?', question_font, (0, 0, 0), (rect.y + 65))
             temp_screen.blit(question1, question1_rect)
             temp_screen.blit(question2, question2_rect)
-
 
             displayed_lines.pop(0) # pop first line
             displayed_y_offset = 0 # reset y_offset to 0 so it draws from the top again
@@ -251,9 +240,9 @@ disclaimer, disclaimer_rect = display_text('*Leave name empty to remain anonymou
 temp_screen.blit(disclaimer, disclaimer_rect)
 
 # add submit button
-submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
+submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha()
 
-change_button = Change_Button(height - 275, submit_button_img, 0.8) # create button instance
+change_button = Change_Button(height - 275, submit_button_img, 0.3) # create button instance
 
 def name_screen():
     # add background image
@@ -283,9 +272,9 @@ def name_screen():
     temp_screen.blit(disclaimer, disclaimer_rect)
 
     # add submit button
-    submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
+    submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha()
 
-    change_button = Change_Button(height - 275, submit_button_img, 0.8) # create button instance
+    change_button = Change_Button(height - 275, submit_button_img, 0.3) # create button instance
 
 
 # ·················•·················• MAIN SCREEN •·················•·················
@@ -311,10 +300,10 @@ def main_screen():
     temp_screen.blit(question2, question2_rect)
 
     # add submit button
-    submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha() # placeholder for now until I solidify the design theme
+    submit_button_img = pygame.image.load('assets/submit_button.png').convert_alpha()
     
     global submit_button
-    submit_button = Submit_Button(height - 100, submit_button_img, 0.8) # create button instance
+    submit_button = Submit_Button(height - 100, submit_button_img, 0.3) # create button instance
 
 # ·················•·················• ★ •·················•·················
 

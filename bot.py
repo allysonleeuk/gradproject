@@ -15,6 +15,7 @@ port = 65432
 
 import serial
 
+import random
 
 # VARIABLES + SETUP
 # (width, height) = (1470, 956) #currently set to my mac aspect ratio
@@ -23,20 +24,12 @@ background_colour = (31, 32, 33)
 
 # set screen size
 screen = pygame.display.set_mode((width, height)) # test if it can be resized to fit different screen sizes
-# current_screen = pygame.display.get_desktop_sizes()
-# print(current_screen)
-
-# ENABLE WHEN CODING ON MAC
-# DISPLAYSURF = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-
-# test if it can be resized to fit different screen sizes
-# screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
 # create a 'fake screen' to resize elements (source: https://stackoverflow.com/a/34919705)
 temp_screen = screen.copy()
 
 # set window name
-pygame.display.set_caption('robots.txt')
+pygame.display.set_caption('bot-side')
 
 #set background colour
 temp_screen.fill(background_colour)
@@ -48,11 +41,19 @@ body_font = pygame.font.Font('assets/roboto.ttf', 30)
 # set screen padding
 padding = 40
 
-# arduino setup
-BAUD = 9600
-# NOTE: check your own arduino when u get home
-ARDUINOPORT = '/dev/cu.usbmodem48CA43547B4C2' # serial port of arduino
-ser = serial.Serial(ARDUINOPORT, BAUD)
+# # arduino setup
+# BAUD = 9600
+# ARDUINOPORT = '/dev/cu.usbmodem64E83367C3C02' # serial port of arduino
+# ser = serial.Serial(ARDUINOPORT, BAUD)
+
+# sound effect setup
+discord_sound = pygame.mixer.Sound("sfx/discord.mp3")
+f2f_sound = pygame.mixer.Sound("sfx/f2f.mp3")
+iphone_sound = pygame.mixer.Sound("sfx/iphone.mp3")
+messages_sound = pygame.mixer.Sound("sfx/messages.mp3")
+snapchat_sound = pygame.mixer.Sound("sfx/snapchat.mp3")
+twitter_sound = pygame.mixer.Sound("sfx/twitter.mp3")
+sfx = [discord_sound, f2f_sound, iphone_sound, messages_sound, snapchat_sound, twitter_sound]
 
 # ·················•·················• SOCKET FUNCTIONS •·················•·················
 # client handler: to isolate client's connection from the pygame code
@@ -117,7 +118,7 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
 
     # split text into lines
     lines = []
-    displayed_lines = []
+    # displayed_lines = []
     while len(words) > 0:
 
         line_words = []
@@ -131,7 +132,21 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
         line = ' '.join(line_words) # add a line with the selected words
         line = '> ' + line
         lines.append(line)
-        displayed_lines.append(line)
+        # displayed_lines.append(line)
+        
+    # move the text upwards when height of screen is exceeded
+    # hard coded to 17 as that's how many lines can be on the screen at once
+    if len(lines) >= 17:
+        # 'clear' screen
+        temp_screen.fill(background_colour)
+        pygame.display.update()
+
+        title, title_rect = display_title('I THINK YOU MEANT TO SAY...', title_font, (255, 255, 255), padding)
+        temp_screen.blit(title, title_rect)
+        
+        pop_lines = len(lines) - 17
+        for _ in range(pop_lines):
+            lines.pop(0)
     
     # print lines individually underneath the other
     y_offset = 0
@@ -141,37 +156,11 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
         # tx, ty is the x and y coords for the top-left of the font surface
         tx = x
         ty = y + y_offset
+        
+        font_surface = font.render(line, True, colour)
+        temp_screen.blit(font_surface, (tx, ty))
 
-        # move the text upwards when height of screen is exceeded
-        if y_offset > allowed_height:
-            # 'clear' screen
-            temp_screen.fill(background_colour)
-            pygame.display.update()
-
-            title, title_rect = display_title('I THINK YOU MEANT TO SAY...', title_font, (255, 255, 255), padding)
-            temp_screen.blit(title, title_rect)
-
-
-            displayed_lines.pop(0) # pop first line
-            displayed_y_offset = 0 # reset y_offset to 0 so it draws from the top again
-            for displayed_line in displayed_lines:
-                fw, fh = font.size(displayed_line)
-
-                tx = x - fw / 2 # center text
-                ty = y + displayed_y_offset
-
-                font_surface = font.render(displayed_line, True, colour)
-                temp_screen.blit(font_surface, (tx, ty))
-
-                displayed_y_offset += fh
-            
-            ty -= fh # reset y level
-
-        else:
-            font_surface = font.render(line, True, colour)
-            temp_screen.blit(font_surface, (tx, ty))
-
-            y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
+        y_offset += fh # offset next line by font height, next line will be rendered underneath the current line
 
 # ·················•·················• ★ •·················•·················
 
@@ -189,7 +178,6 @@ while True:
         elif event.type == pygame.VIDEORESIZE:
             screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
 
-
     # check if the text coming in is different, if so, clear the screen
     if latest_response != current_response:
         # 'clear' screen
@@ -199,7 +187,11 @@ while True:
         title, title_rect = display_title('I THINK YOU MEANT TO SAY...', title_font, (255, 255, 255), padding)
         temp_screen.blit(title, title_rect)
         
-        ser.write(f"{latest_response}\n".encode())
+        # play sound effects when new response comes in
+        chosen_sound = random.choice(sfx)
+        pygame.mixer.Sound.play(chosen_sound)
+        
+        # ser.write(f"{latest_response}\n".encode())
     else:
         wrap_text(latest_response, 
                     body_font, 
@@ -209,6 +201,7 @@ while True:
                     width - int(padding) * 3, 
                     height - 120 - int(padding)
                     ) 
+
     
     current_response = latest_response
         
