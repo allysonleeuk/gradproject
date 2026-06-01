@@ -23,7 +23,7 @@ import random
 background_colour = (31, 32, 33)
 
 # set screen size
-screen = pygame.display.set_mode((width, height)) # test if it can be resized to fit different screen sizes
+screen = pygame.display.set_mode((width, height))
 
 # create a 'fake screen' to resize elements (source: https://stackoverflow.com/a/34919705)
 temp_screen = screen.copy()
@@ -41,10 +41,10 @@ body_font = pygame.font.Font('assets/roboto.ttf', 30)
 # set screen padding
 padding = 40
 
-# # arduino setup
-# BAUD = 9600
-# ARDUINOPORT = '/dev/cu.usbmodem64E83367C3C02' # serial port of arduino
-# ser = serial.Serial(ARDUINOPORT, BAUD)
+# arduino setup
+BAUD = 9600
+ARDUINOPORT = '/dev/cu.usbmodem64E83367C3C02' # serial port of arduino
+ser = serial.Serial(ARDUINOPORT, BAUD)
 
 # sound effect setup
 discord_sound = pygame.mixer.Sound("sfx/discord.mp3")
@@ -56,7 +56,7 @@ twitter_sound = pygame.mixer.Sound("sfx/twitter.mp3")
 sfx = [discord_sound, f2f_sound, iphone_sound, messages_sound, snapchat_sound, twitter_sound]
 
 # ·················•·················• SOCKET FUNCTIONS •·················•·················
-# client handler: to isolate client's connection from the pygame code
+# client handler: to isolate ML model and client connection from the pygame code
 def handle_client(conn, addr):
     global latest_response
     
@@ -69,7 +69,6 @@ def handle_client(conn, addr):
                 break
             
             decoded_text = str(user_text.decode('utf-8'))
-            # print(decoded_text)
             
             latest_response = generate_response(decoded_text)
             print(latest_response)
@@ -112,13 +111,11 @@ def display_title(title, font, text_colour, y):
 title, title_rect = display_title('I THINK YOU MEANT TO SAY...', title_font, (255, 255, 255), padding)
 temp_screen.blit(title, title_rect)
 
-# NOTE: this is the full version, will have to edit when the text starts actually reacting instead of hard-coded tests
 def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
     words = text.split()
 
     # split text into lines
     lines = []
-    # displayed_lines = []
     while len(words) > 0:
 
         line_words = []
@@ -132,7 +129,6 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
         line = ' '.join(line_words) # add a line with the selected words
         line = '> ' + line
         lines.append(line)
-        # displayed_lines.append(line)
         
     # move the text upwards when height of screen is exceeded
     # hard coded to 17 as that's how many lines can be on the screen at once
@@ -191,7 +187,7 @@ while True:
         chosen_sound = random.choice(sfx)
         pygame.mixer.Sound.play(chosen_sound)
         
-        # ser.write(f"{latest_response}\n".encode())
+        ser.write(f"{latest_response}\n".encode())
     else:
         wrap_text(latest_response, 
                     body_font, 

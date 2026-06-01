@@ -11,7 +11,8 @@ def generate_response(user_text):
     response = chat('llama3.2:1b', 
                     messages=[
                         {'role': 'system', 'content': system_prompt},
-                        {'role': 'user', 'content': f'Write the next 5 words of this sentence (doesnt have to be complete): {user_text}'} # 'doesn't have to be complete' to avoid the model saying it can't complete the phrase
+                        {'role': 'user', 'content': f'Write the next 5 words of this sentence (doesnt have to be complete): {user_text}'}
+                        # 'doesn't have to be complete' to avoid the model saying it can't complete the phrase
                     ])
     
     model_response = response.message.content

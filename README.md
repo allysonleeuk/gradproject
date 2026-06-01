@@ -24,6 +24,8 @@ It utilises Python to create the visual interface and ArduinoIDE to control the 
     ollama pull llama3.2:1b
     ```
 
+<br>
+
 ### Arduino–Thermal Printer Aspect
 For this project, the thermal printers used are manufactured by Adafruit. Therefore, the code is written for their specific printers. <br>
 The Adafruit Thermal Printer library install and circuit is detail on the [Adafruit website](https://learn.adafruit.com/mini-thermal-receipt-printer/microcontroller). <br>

@@ -20,7 +20,7 @@ bg_image = pygame.image.load('assets/frutigeraero.jpg')
 bg_image = pygame.transform.scale(bg_image, (width, height))
 
 # set screen size
-screen = pygame.display.set_mode((width, height)) # test if it can be resized to fit different screen sizes
+screen = pygame.display.set_mode((width, height))
 
 # create a 'fake screen' to resize elements (source: https://stackoverflow.com/a/34919705)
 temp_screen = screen.copy()
@@ -42,7 +42,7 @@ input_font = pygame.font.Font('assets/windows.ttf', 35)
 clock = pygame.time.Clock()
 user_text = ''
 user_name = ''
-input_datetime = '' # NOTE: ADD THIS, AND SEND TO ARDUINO
+input_datetime = ''
 
 # booleans
 main_screen_active = False
@@ -59,10 +59,10 @@ s.connect((host, port))
 
 last_sent_time = 0 # timer
 
-# # arduino setup
-# BAUD = 9600
-# ARDUINOPORT = '/dev/cu.usbmodem64E83367C3C02' # serial port of arduino
-# ser = serial.Serial(ARDUINOPORT, BAUD)
+# arduino setup
+BAUD = 9600
+ARDUINOPORT = '/dev/cu.usbmodem1020BA0AAC782' # serial port of arduino
+ser = serial.Serial(ARDUINOPORT, BAUD)
 
 
 # ·················•·················• FUNCTIONS ETC. •·················•·················
@@ -123,7 +123,7 @@ class Submit_Button(): # button class
                 now = datetime.now().replace(microsecond=0)
                 input_datetime = str(now)
                 
-                # ser.write(f"{user_text}|{user_name}|{input_datetime}\n".encode())
+                ser.write(f"{user_text}|{user_name}|{input_datetime}\n".encode())
                 
                 # print(user_text)
                 # print(user_name)
@@ -166,7 +166,7 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
         fw, fh = font.size(line)
 
         # tx, ty is the x and y coords for the top-left of the font surface
-        tx = x - fw / 2 # center text
+        tx = x - fw / 2 # centre text
         ty = y + y_offset
 
         # move the text upwards when height of text box is exceeded
@@ -194,7 +194,7 @@ def wrap_text(text, font, colour, x, y, allowed_width, allowed_height):
             for displayed_line in displayed_lines:
                 fw, fh = font.size(displayed_line)
 
-                tx = x - fw / 2 # center text
+                tx = x - fw / 2 # centre text
                 ty = y + displayed_y_offset
 
                 font_surface = font.render(displayed_line, True, colour)
@@ -220,12 +220,10 @@ pygame.display.update()
 # add rect backgrounds
 rect_border = pygame.Rect(0, 0, (width - 60), (height - 60))
 rect_border.center = (width / 2, height / 2)
-# pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
 draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
 
 rect = pygame.Rect(0, 0, (width - 90), (height - 90))
 rect.center = (width / 2, height / 2)
-# pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
 draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
 
 name_input_rect = pygame.Rect(0, 0, (width - 280), (height - 700))
@@ -252,12 +250,10 @@ def name_screen():
     # add rect backgrounds
     rect_border = pygame.Rect(0, 0, (width - 60), (height - 60))
     rect_border.center = (width / 2, height / 2)
-    # pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
     draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
 
     rect = pygame.Rect(0, 0, (width - 90), (height - 90))
     rect.center = (width / 2, height / 2)
-    # pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
     draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
 
     name_input_rect = pygame.Rect(0, 0, (width - 280), (height - 700))
@@ -285,12 +281,10 @@ def main_screen():
 
     rect_border = pygame.Rect(0, 0, (width - 60), (height - 60))
     rect_border.center = (width / 2, height / 2)
-    # pygame.draw.rect(temp_screen, (30, 180, 221), rect_border, border_radius = 25)
     draw_rect_alpha(temp_screen, (30, 180, 221, 150), rect_border, 25)
 
     rect = pygame.Rect(0, 0, (width - 90), (height - 90))
     rect.center = (width / 2, height / 2)
-    # pygame.draw.rect(temp_screen, (51, 215, 239), rect, border_radius = 15)
     draw_rect_alpha(temp_screen, (51, 215, 239, 150), rect, 15)
 
     # add question text
@@ -349,7 +343,7 @@ while True:
                     name_input_font, 
                     (0, 0, 0), 
                     width / 2, 
-                    name_input_rect.y + 38, # NOTE: fix this
+                    name_input_rect.y + 38,
                     name_input_rect.width - int(padding) * 2, 
                     name_input_rect.height - int(padding) * 2
                     )
@@ -387,8 +381,6 @@ while True:
                 pygame.draw.rect(temp_screen, (30, 180, 221), input_rect_border, 5, border_radius = 15)
 
             padding = 20
-            # text_surface = input_font.render(user_text, True, (0, 0, 0))
-            # temp_screen.blit(text_surface, (input_rect.x + padding, input_rect.y + padding))
             wrap_text(user_text, 
                     input_font, 
                     (0, 0, 0), 
@@ -401,8 +393,8 @@ while True:
             # display button
             submit_button.draw()
             
-        # open socket connection to transfer current user input to generate.py
-        # send every __ seconds
+        # open socket connection to transfer current user input to bot.py
+        # send every 5 seconds
         current_time = time.time()
         
         if current_time - last_sent_time >= 5:
